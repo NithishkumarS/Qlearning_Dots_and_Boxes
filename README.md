@@ -1,4 +1,4 @@
-#Qlearning for the game of Dots and Boxes
+# Qlearning for the game of Dots and Boxes
 
 To play the GUI, run
 
