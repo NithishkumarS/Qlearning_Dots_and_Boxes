@@ -1,7 +1,7 @@
 from agent1 import *
 from agent2 import *
 from dots_and_boxes import *
-
+import matplotlib.pyplot as plt
 def traverse_updateQ(Q,board,l_rate=1,gamma = .9,random_move_prob=1):
 
     board_num = board2num(board)    
@@ -55,8 +55,24 @@ def init_Q2():
     return(Q)
     
     
-def train_Qlearning(num_games,Q = None,l_rate=1,gamma = .9,random_move_prob=2, print_score=False, agent=0):
+def player_move(board,Qtable,k,agent):
     
+    if agent == 0: 
+        move = get_random_move(board)
+    elif agent == 1:
+        move = first_available_move(board)   
+    elif agent == 2:
+        move = behavior(board)
+    elif agent == 3:
+        move = agent2_move(board,Qtable,k)
+    else:
+        if random.randrange(3):
+            move = agent2_move(board,Qtable,k)
+        else: 
+            move = get_random_move(board)
+    return(move)
+def train_Qlearning(num_games,Q = None,l_rate=1,gamma = .9,random_move_prob=2, print_score=False, agent=0):
+    res= []
     if Q == None:
         # initialize Q
         Q = init_Q2()
@@ -107,35 +123,33 @@ def train_Qlearning(num_games,Q = None,l_rate=1,gamma = .9,random_move_prob=2, p
         if not score[0] == score[1]: wins[winner] += 1  
          
         start_player = (1 + start_player) % 2 
+        res.append(score)
+    print('wins', wins)
+    return(Q,res)
         
-    return(Q,wins)
-        
-        
-def player_move(board,Qtable,k,agent):
     
-    if agent == 0: 
-        move = get_random_move(board)
-    elif agent == 1:
-        move = first_available_move(board)   
-    elif agent == 2:
-        move = behavior(board)
-    elif agent == 3:
-        move = agent2_move(board,Qtable,k)
-    else:
-        if random.randrange(3):
-            move = agent2_move(board,Qtable,k)
-        else: 
-            move = get_random_move(board)
-    return(move)
 
     
 Qtable = agent2_load(10) 
 gamma = 0.9
 #generarting intial q table
 Q,wins = Q,wins = train_Qlearning(1,l_rate = 1,gamma = .9,random_move_prob = 3, agent = 1) 
+
 #training the data
-Q,wins = train_Qlearning(1000,Q, l_rate = 0.5,gamma = .9, random_move_prob = 2, agent = 0)
+Q,wins = train_Qlearning(10000,Q, l_rate = 0.5,gamma = .82, random_move_prob = 2, agent = 2)
+print('ff')
+
 #testing the code, note learning rate set as zero 
-Q1,wins = train_Qlearning(100,Q, l_rate = 0,gamma = .9, random_move_prob = 1, print_score = False, agent = 0)
+# gamma doesnt have an ipact since learning rate is zero
+
+Q1,wins = train_Qlearning(100,Q, l_rate = 0,gamma = .9, random_move_prob = 1, print_score = True, agent =1)
 print('Wins, Loses '+  ': ' + str(wins))
 
+a = [i[0] for i in wins]
+b = [i[1] for i in wins]
+n = range(100)
+fig = plt.figure()
+plt.plot(n,a,label = 'Q_agent')
+plt.plot(n,b,label = 'Random player')
+plt.legend()
+plt.show()
